@@ -1,0 +1,7 @@
+{
+  "default": "deny",
+  "inbound": [
+    { "port": 443, "from": "campus-vpn", "note": "HTTPS for advisors" },
+    { "port": 22, "from": "0.0.0.0/0", "note": "incident 2026-10-14: vendor needed shell access, temporary" }
+  ]
+}

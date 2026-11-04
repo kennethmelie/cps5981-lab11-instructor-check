@@ -1,0 +1,51 @@
+# CPS 5981 Unit 11 - Infrastructure-as-Code Assurance pipeline.
+# Runs free on a PUBLIC GitHub repository. No cloud account, token or card is needed:
+# the Terraform in iac/ is SCANNED, never applied.
+# Scanners are allowed to "fail" on their own; the GATE step alone decides, using gate-policy.md.
+name: iac-assurance
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  assure:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Say what is being checked
+        run: echo "Checking ${{ github.event.pull_request.title }} on ${{ github.ref_name }}"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install the scanners at pinned versions
+        run: python -m pip install --quiet checkov==3.4.3 zizmor==1.32.0
+
+      - name: Prepare evidence folder
+        run: mkdir -p run-output && cp -r iac run-output/iac-snapshot
+
+      - name: IAC SCAN - Checkov on iac/ (AWS and Google Cloud)
+        continue-on-error: true
+        run: checkov -d iac --framework terraform --quiet --compact -o json > run-output/checkov.json
+
+      - name: PIPELINE SCAN - zizmor on .github/workflows/
+        continue-on-error: true
+        run: zizmor --offline --format json .github/workflows/ > run-output/zizmor.json
+
+      - name: GATE - apply gate-policy.md
+        run: python gate/evaluate.py
+
+      - name: Upload the evidence for this run
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: evidence-run-${{ github.run_id }}
+          path: run-output/
+          retention-days: 90

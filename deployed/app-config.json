@@ -1,0 +1,6 @@
+{
+  "listen": "127.0.0.1:3000",
+  "debug": false,
+  "session_ttl_minutes": 30,
+  "ledger_export": "nightly"
+}

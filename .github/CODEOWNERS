@@ -1,0 +1,6 @@
+# Station 6: replace your-github-username with your GitHub username, then commit.
+# Changes to the pipeline, the gate and the declared infrastructure need the owner's review.
+# /.github/          @your-github-username
+# /gate/             @your-github-username
+# /gate-policy.md    @your-github-username
+# /iac/              @your-github-username
