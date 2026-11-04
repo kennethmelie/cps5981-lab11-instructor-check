@@ -36,7 +36,12 @@ jobs:
           terraform -chdir=iac/local apply -auto-approve -input=false -no-color
 
       - name: Compare declared with DEPLOYED
-        run: python3 scripts/drift_compare.py rendered deployed | tee drift-report.md >> "$GITHUB_STEP_SUMMARY"
+        run: |
+          set +e
+          python3 scripts/drift_compare.py rendered deployed > drift-report.md
+          code=$?
+          cat drift-report.md | tee -a "$GITHUB_STEP_SUMMARY"
+          exit $code
 
       - name: Upload the drift report
         if: always()
